@@ -2,8 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { getOwnCompany, createCompany, updateCompany, deleteCompany } from '../../api';
 import { Building2, Globe, MapPin, FileText, CheckCircle2, AlertCircle, Loader2, ArrowLeft, Trash2, ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import RegisterCompanyForm from '../../components/company/RegisterCompanyForm';
 import DeleteConfirmationModal from '../../components/modal/DeleteConfirmationModal';
+
+const companySchema = z.object({
+    name: z.string().min(2, 'Company name must be at least 2 characters'),
+    website: z.string().url('Invalid website URL').or(z.string().min(1, 'Website is required')),
+    location: z.string().min(2, 'Location must be at least 2 characters'),
+    description: z.string().min(20, 'Description must be at least 20 characters'),
+});
 
 const SuccessCelebration = ({ companyName, onContinue }) => {
     return (
@@ -41,13 +51,11 @@ const CompanyPage = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        website: '',
-        location: ''
-    });
     const [submitting, setSubmitting] = useState(false);
+
+    const { register, handleSubmit, reset, formState: { errors } } = useForm({
+        resolver: zodResolver(companySchema),
+    });
 
     useEffect(() => {
         fetchCompany();
@@ -70,13 +78,8 @@ const CompanyPage = () => {
         }
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
     const handleEdit = () => {
-        setFormData({
+        reset({
             name: company.name,
             description: company.description,
             website: company.website,
@@ -119,12 +122,11 @@ const CompanyPage = () => {
         }
     };
 
-    const handleUpdate = async (e) => {
-        e.preventDefault();
+    const handleUpdate = async (data) => {
         setSubmitting(true);
         setError(null);
         try {
-            const response = await updateCompany(company.id, formData);
+            const response = await updateCompany(company.id, data);
             if (response.data && response.data.data) {
                 setCompany(response.data.data);
                 setIsEditing(false);
@@ -283,11 +285,18 @@ const CompanyPage = () => {
 
                 <div className="glass-card p-1 rounded-[3rem]">
                     <div className="bg-white p-12 rounded-[2.8rem] shadow-inner">
-                        <form onSubmit={handleUpdate} className="space-y-10">
-                            {error && (
-                                <div className="bg-red-50 border border-red-100 text-red-600 p-6 rounded-[2rem] text-sm flex items-center gap-4 animate-shake">
-                                    <AlertCircle className="shrink-0" size={28} />
-                                    <p className="font-bold">{error}</p>
+                        <form onSubmit={handleSubmit(handleUpdate)} className="space-y-10">
+                            {(error || Object.keys(errors).length > 0) && (
+                                <div className="bg-red-50 border border-red-100 text-red-600 p-6 rounded-[2rem] text-sm flex flex-col gap-2 animate-shake">
+                                    {error && (
+                                        <div className="flex items-center gap-4">
+                                            <AlertCircle className="shrink-0" size={28} />
+                                            <p className="font-bold">{error}</p>
+                                        </div>
+                                    )}
+                                    {Object.values(errors).map((err, i) => (
+                                        <p key={i} className="text-xs font-semibold ml-11">• {err.message}</p>
+                                    ))}
                                 </div>
                             )}
 
@@ -297,12 +306,9 @@ const CompanyPage = () => {
                                     <div className="relative group">
                                         <Building2 className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-all duration-300" size={24} />
                                         <input 
+                                            {...register('name')}
                                             type="text" 
-                                            name="name"
-                                            required
-                                            className="input-field pl-16 h-16 text-lg font-semibold focus:ring-4 focus:ring-primary/5" 
-                                            value={formData.name}
-                                            onChange={handleInputChange}
+                                            className={`input-field pl-16 h-16 text-lg font-semibold focus:ring-4 focus:ring-primary/5 ${errors.name ? 'border-red-300' : ''}`} 
                                         />
                                     </div>
                                 </div>
@@ -312,12 +318,9 @@ const CompanyPage = () => {
                                     <div className="relative group">
                                         <Globe className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-all duration-300" size={24} />
                                         <input 
+                                            {...register('website')}
                                             type="text" 
-                                            name="website"
-                                            required
-                                            className="input-field pl-16 h-16 text-lg font-semibold focus:ring-4 focus:ring-primary/5" 
-                                            value={formData.website}
-                                            onChange={handleInputChange}
+                                            className={`input-field pl-16 h-16 text-lg font-semibold focus:ring-4 focus:ring-primary/5 ${errors.website ? 'border-red-300' : ''}`} 
                                         />
                                     </div>
                                 </div>
@@ -327,12 +330,9 @@ const CompanyPage = () => {
                                     <div className="relative group">
                                         <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-primary transition-all duration-300" size={24} />
                                         <input 
+                                            {...register('location')}
                                             type="text" 
-                                            name="location"
-                                            required
-                                            className="input-field pl-16 h-16 text-lg font-semibold focus:ring-4 focus:ring-primary/5" 
-                                            value={formData.location}
-                                            onChange={handleInputChange}
+                                            className={`input-field pl-16 h-16 text-lg font-semibold focus:ring-4 focus:ring-primary/5 ${errors.location ? 'border-red-300' : ''}`} 
                                         />
                                     </div>
                                 </div>
@@ -343,12 +343,9 @@ const CompanyPage = () => {
                                 <div className="relative group">
                                     <FileText className="absolute left-5 top-6 text-gray-300 group-focus-within:text-primary transition-all duration-300" size={24} />
                                     <textarea 
-                                        name="description"
-                                        required
+                                        {...register('description')}
                                         rows="6"
-                                        className="input-field pl-16 py-6 resize-none text-lg font-medium leading-relaxed focus:ring-4 focus:ring-primary/5" 
-                                        value={formData.description}
-                                        onChange={handleInputChange}
+                                        className={`input-field pl-16 py-6 resize-none text-lg font-medium leading-relaxed focus:ring-4 focus:ring-primary/5 ${errors.description ? 'border-red-300' : ''}`} 
                                     ></textarea>
                                 </div>
                             </div>
@@ -557,8 +554,6 @@ const CompanyPage = () => {
                             </button>
                         </div>
                     </div>
-
-
                 </div>
             </div>
 

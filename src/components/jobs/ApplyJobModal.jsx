@@ -1,27 +1,36 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Loader2, Sparkles, Building2, MapPin, Wallet, CheckCircle2 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { X, Send, Loader2, Sparkles, Building2, MapPin, CheckCircle2 } from 'lucide-react';
 import { applyToJob } from '../../api';
 
+const applySchema = z.object({
+    cover_letter: z.string()
+        .min(20, 'Cover letter must be at least 20 characters')
+        .max(5000, 'Cover letter is too long'),
+});
+
 const ApplyJobModal = ({ isOpen, onClose, job }) => {
-    const [coverLetter, setCoverLetter] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(null);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!coverLetter.trim()) return;
+    const { register, handleSubmit, reset, formState: { errors } } = useForm({
+        resolver: zodResolver(applySchema),
+    });
 
+    const handleFormSubmit = async (data) => {
         setLoading(true);
         setError(null);
         try {
-            await applyToJob(job.id, coverLetter);
+            await applyToJob(job.id, data.cover_letter);
             setSuccess(true);
             setTimeout(() => {
                 onClose();
                 setSuccess(false);
-                setCoverLetter('');
+                reset();
             }, 2000);
         } catch (err) {
             console.error('Error applying to job:', err);
@@ -101,7 +110,7 @@ const ApplyJobModal = ({ isOpen, onClose, job }) => {
                                 </div>
 
                                 {/* Form */}
-                                <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                                <form onSubmit={handleSubmit(handleFormSubmit)} className="p-8 space-y-6">
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
                                             <label className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
@@ -111,12 +120,13 @@ const ApplyJobModal = ({ isOpen, onClose, job }) => {
                                             <span className="text-[10px] font-bold text-gray-300">Share your story & experience</span>
                                         </div>
                                         <textarea
-                                            required
-                                            value={coverLetter}
-                                            onChange={(e) => setCoverLetter(e.target.value)}
+                                            {...register('cover_letter')}
                                             placeholder="Introduce yourself and explain why you're a great fit for this role..."
-                                            className="w-full min-h-[240px] p-6 bg-gray-50 border border-gray-100 rounded-3xl outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-medium leading-relaxed resize-none"
+                                            className={`w-full min-h-[240px] p-6 bg-gray-50 border ${errors.cover_letter ? 'border-red-300' : 'border-gray-100'} rounded-3xl outline-none focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all text-sm font-medium leading-relaxed resize-none`}
                                         />
+                                        {errors.cover_letter && (
+                                            <p className="text-xs text-red-500 font-bold mt-1 px-2">{errors.cover_letter.message}</p>
+                                        )}
                                     </div>
 
                                     {error && (
@@ -136,7 +146,7 @@ const ApplyJobModal = ({ isOpen, onClose, job }) => {
                                         </button>
                                         <button
                                             type="submit"
-                                            disabled={loading || !coverLetter.trim()}
+                                            disabled={loading}
                                             className="flex-[2] btn-primary flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
                                         >
                                             {loading ? (

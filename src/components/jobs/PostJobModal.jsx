@@ -1,92 +1,84 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { X, Briefcase, FileText, MapPin, DollarSign, Tag, Plus, Loader2, Sparkles, CheckCircle2, Power } from 'lucide-react';
+
+const jobSchema = z.object({
+    title: z.string().min(3, 'Title is too short'),
+    description: z.string().min(20, 'Description is too short'),
+    job_type: z.string().min(1, 'Please select a job type'),
+    location: z.string().min(2, 'Location is required'),
+    salary_min: z.coerce.number().min(0, 'Salary must be positive'),
+    salary_max: z.coerce.number().min(0, 'Salary must be positive'),
+    tags: z.array(z.string()).default([]),
+    is_active: z.boolean().default(true),
+}).refine(data => data.salary_max >= data.salary_min, {
+    message: "Maximum salary cannot be less than minimum salary",
+    path: ["salary_max"],
+});
 
 const PostJobModal = ({ isOpen, onClose, onSubmit, submitting, initialData = null }) => {
     const isEditing = !!initialData;
-    
-    const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        job_type: '',
-        location: '',
-        salary_min: '',
-        salary_max: '',
-        tags: [],
-        is_active: true
-    });
     const [tagInput, setTagInput] = useState('');
 
+    const { register, handleSubmit, control, setValue, watch, reset, formState: { errors } } = useForm({
+        resolver: zodResolver(jobSchema),
+        defaultValues: {
+            title: '',
+            description: '',
+            job_type: '',
+            location: '',
+            salary_min: '',
+            salary_max: '',
+            tags: [],
+            is_active: true
+        }
+    });
+
+    const tags = watch('tags') || [];
+
     useEffect(() => {
-        if (initialData && isOpen) {
-            setFormData({
-                title: initialData.title || '',
-                description: initialData.description || '',
-                job_type: initialData.job_type || 'full_time',
-                location: initialData.location || '',
-                salary_min: initialData.salary_min || '',
-                salary_max: initialData.salary_max || '',
-                tags: initialData.tags || [],
-                is_active: initialData.is_active !== undefined ? initialData.is_active : true
-            });
-        } else if (!initialData && isOpen) {
-            setFormData({
-                title: '',
-                description: '',
-                job_type: '',
-                location: '',
-                salary_min: '',
-                salary_max: '',
-                tags: [],
-                is_active: true
-            });
+        if (isOpen) {
+            if (initialData) {
+                reset({
+                    title: initialData.title || '',
+                    description: initialData.description || '',
+                    job_type: initialData.job_type || '',
+                    location: initialData.location || '',
+                    salary_min: initialData.salary_min || '',
+                    salary_max: initialData.salary_max || '',
+                    tags: initialData.tags || [],
+                    is_active: initialData.is_active !== undefined ? initialData.is_active : true
+                });
+            } else {
+                reset({
+                    title: '',
+                    description: '',
+                    job_type: '',
+                    location: '',
+                    salary_min: '',
+                    salary_max: '',
+                    tags: [],
+                    is_active: true
+                });
+            }
             setTagInput('');
         }
-    }, [initialData, isOpen]);
-
-    const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData(prev => ({ 
-            ...prev, 
-            [name]: type === 'checkbox' ? checked : value 
-        }));
-    };
+    }, [initialData, isOpen, reset]);
 
     const handleAddTag = (e) => {
         if (e) e.preventDefault();
         const trimmedTag = tagInput.trim();
-        if (trimmedTag && !formData.tags.includes(trimmedTag)) {
-            setFormData(prev => ({
-                ...prev,
-                tags: [...prev.tags, trimmedTag]
-            }));
+        if (trimmedTag && !tags.includes(trimmedTag)) {
+            setValue('tags', [...tags, trimmedTag]);
             setTagInput('');
         }
     };
 
     const removeTag = (tagToRemove) => {
-        setFormData(prev => ({
-            ...prev,
-            tags: prev.tags.filter(tag => tag !== tagToRemove)
-        }));
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const salaryMin = parseInt(formData.salary_min) || 0;
-        const salaryMax = parseInt(formData.salary_max) || 0;
-
-        if (salaryMax < salaryMin) {
-            alert('Maximum salary cannot be less than minimum salary.');
-            return;
-        }
-
-        const submissionData = {
-            ...formData,
-            salary_min: salaryMin,
-            salary_max: salaryMax
-        };
-        onSubmit(submissionData);
+        setValue('tags', tags.filter(tag => tag !== tagToRemove));
     };
 
     if (!isOpen) return null;
@@ -131,7 +123,7 @@ const PostJobModal = ({ isOpen, onClose, onSubmit, submitting, initialData = nul
                     </div>
 
                     {/* Form */}
-                    <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+                    <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Job Title */}
                             <div className="space-y-2 md:col-span-2">
@@ -139,15 +131,13 @@ const PostJobModal = ({ isOpen, onClose, onSubmit, submitting, initialData = nul
                                 <div className="relative group">
                                     <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={20} />
                                     <input 
+                                        {...register('title')}
                                         type="text" 
-                                        name="title"
                                         placeholder="e.g., Senior Frontend Engineer"
-                                        required
-                                        className="input-field pl-12" 
-                                        value={formData.title}
-                                        onChange={handleInputChange}
+                                        className={`input-field pl-12 ${errors.title ? 'border-red-300' : ''}`} 
                                     />
                                 </div>
+                                {errors.title && <p className="text-red-500 text-xs font-bold ml-2">{errors.title.message}</p>}
                             </div>
 
                             {/* Job Type */}
@@ -156,11 +146,8 @@ const PostJobModal = ({ isOpen, onClose, onSubmit, submitting, initialData = nul
                                 <div className="relative group">
                                     <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={20} />
                                     <select 
-                                        name="job_type"
-                                        className="input-field pl-12 appearance-none"
-                                        value={formData.job_type}
-                                        onChange={handleInputChange}
-                                        required
+                                        {...register('job_type')}
+                                        className={`input-field pl-12 appearance-none ${errors.job_type ? 'border-red-300' : ''}`}
                                     >
                                         <option value="" disabled>Select Type</option>
                                         <option value="full_time">Full Time</option>
@@ -169,6 +156,7 @@ const PostJobModal = ({ isOpen, onClose, onSubmit, submitting, initialData = nul
                                         <option value="intern">Internship</option>
                                     </select>
                                 </div>
+                                {errors.job_type && <p className="text-red-500 text-xs font-bold ml-2">{errors.job_type.message}</p>}
                             </div>
 
                             {/* Location */}
@@ -177,15 +165,13 @@ const PostJobModal = ({ isOpen, onClose, onSubmit, submitting, initialData = nul
                                 <div className="relative group">
                                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={20} />
                                     <input 
+                                        {...register('location')}
                                         type="text" 
-                                        name="location"
                                         placeholder="City, Country"
-                                        required
-                                        className="input-field pl-12" 
-                                        value={formData.location}
-                                        onChange={handleInputChange}
+                                        className={`input-field pl-12 ${errors.location ? 'border-red-300' : ''}`} 
                                     />
                                 </div>
+                                {errors.location && <p className="text-red-500 text-xs font-bold ml-2">{errors.location.message}</p>}
                             </div>
 
                             {/* Salary Min */}
@@ -194,17 +180,15 @@ const PostJobModal = ({ isOpen, onClose, onSubmit, submitting, initialData = nul
                                 <div className="relative group">
                                     <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={20} />
                                     <input 
+                                        {...register('salary_min')}
                                         type="number" 
-                                        name="salary_min"
                                         placeholder="500,000"
-                                        required
-                                        className="input-field pl-12" 
-                                        value={formData.salary_min}
-                                        onChange={handleInputChange}
+                                        className={`input-field pl-12 ${errors.salary_min ? 'border-red-300' : ''}`} 
                                         min="0"
                                         max="99999999"
                                     />
                                 </div>
+                                {errors.salary_min && <p className="text-red-500 text-xs font-bold ml-2">{errors.salary_min.message}</p>}
                             </div>
 
                             {/* Salary Max */}
@@ -213,17 +197,15 @@ const PostJobModal = ({ isOpen, onClose, onSubmit, submitting, initialData = nul
                                 <div className="relative group">
                                     <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" size={20} />
                                     <input 
+                                        {...register('salary_max')}
                                         type="number" 
-                                        name="salary_max"
                                         placeholder="1,200,000"
-                                        required
-                                        className="input-field pl-12" 
-                                        value={formData.salary_max}
-                                        onChange={handleInputChange}
+                                        className={`input-field pl-12 ${errors.salary_max ? 'border-red-300' : ''}`} 
                                         min="0"
                                         max="99999999"
                                     />
                                 </div>
+                                {errors.salary_max && <p className="text-red-500 text-xs font-bold ml-2">{errors.salary_max.message}</p>}
                             </div>
                         </div>
 
@@ -233,22 +215,20 @@ const PostJobModal = ({ isOpen, onClose, onSubmit, submitting, initialData = nul
                             <div className="relative group">
                                 <FileText className="absolute left-4 top-5 text-gray-400 group-focus-within:text-primary transition-colors" size={20} />
                                 <textarea 
-                                    name="description"
+                                    {...register('description')}
                                     placeholder="Outline the responsibilities, requirements, and benefits..."
-                                    required
                                     rows="4"
-                                    className="input-field pl-12 py-4 resize-none" 
-                                    value={formData.description}
-                                    onChange={handleInputChange}
+                                    className={`input-field pl-12 py-4 resize-none ${errors.description ? 'border-red-300' : ''}`} 
                                 ></textarea>
                             </div>
+                            {errors.description && <p className="text-red-500 text-xs font-bold ml-2">{errors.description.message}</p>}
                         </div>
 
                         {/* Tags */}
                         <div className="space-y-3">
                             <label className="premium-label">Tags / Skills</label>
                             <div className="flex flex-wrap gap-2 mb-3">
-                                {formData.tags.map((tag, index) => (
+                                {tags.map((tag, index) => (
                                     <span 
                                         key={index} 
                                         className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold flex items-center gap-1.5"
@@ -289,24 +269,37 @@ const PostJobModal = ({ isOpen, onClose, onSubmit, submitting, initialData = nul
                         {/* Active Toggle */}
                         <div className="flex items-center justify-between p-6 bg-gray-50 rounded-[2rem] border border-gray-100">
                             <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.is_active ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
-                                    <Power size={20} />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-gray-900">Listing Visibility</p>
-                                    <p className="text-xs text-gray-500">{formData.is_active ? 'Your job is live and accepting applications' : 'Job is hidden and inactive'}</p>
-                                </div>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input 
-                                    type="checkbox" 
+                                <Controller
                                     name="is_active"
-                                    className="sr-only peer" 
-                                    checked={formData.is_active}
-                                    onChange={handleInputChange}
+                                    control={control}
+                                    render={({ field }) => (
+                                        <>
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${field.value ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                                                <Power size={20} />
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-gray-900">Listing Visibility</p>
+                                                <p className="text-xs text-gray-500">{field.value ? 'Your job is live and accepting applications' : 'Job is hidden and inactive'}</p>
+                                            </div>
+                                        </>
+                                    )}
                                 />
-                                <div className="w-14 h-8 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary shadow-inner"></div>
-                            </label>
+                            </div>
+                            <Controller
+                                name="is_active"
+                                control={control}
+                                render={({ field }) => (
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input 
+                                            type="checkbox" 
+                                            className="sr-only peer" 
+                                            checked={field.value}
+                                            onChange={field.onChange}
+                                        />
+                                        <div className="w-14 h-8 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary shadow-inner"></div>
+                                    </label>
+                                )}
+                            />
                         </div>
 
                         {/* Submit */}

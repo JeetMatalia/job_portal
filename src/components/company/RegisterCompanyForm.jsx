@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Building2, Globe, MapPin, FileText, Loader2, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
 
+const companySchema = z.object({
+    name: z.string().min(2, 'Company name must be at least 2 characters'),
+    website: z.string().url('Invalid website URL').or(z.string().min(1, 'Website is required')),
+    location: z.string().min(2, 'Location must be at least 2 characters'),
+    description: z.string().min(20, 'Description must be at least 20 characters'),
+});
+
 const RegisterCompanyForm = ({ onSubmit, submitting, error }) => {
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        website: '',
-        location: ''
+    const { register, handleSubmit, formState: { errors } } = useForm({
+        resolver: zodResolver(companySchema),
     });
 
     const [focusedField, setFocusedField] = useState(null);
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
 
     const containerVariants = {
         hidden: { opacity: 0, scale: 0.95 },
@@ -81,22 +83,26 @@ const RegisterCompanyForm = ({ onSubmit, submitting, error }) => {
                 >
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-purple-600"></div>
                     <form 
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            onSubmit(formData);
-                        }}
+                        onSubmit={handleSubmit(onSubmit)}
                         className="p-8 space-y-6"
                     >
-                        {error && (
+                        {(error || Object.keys(errors).length > 0) && (
                             <motion.div 
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
-                                className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm flex items-center gap-3"
+                                className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-2xl text-sm flex flex-col gap-2"
                             >
-                                <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
-                                    <FileText size={16} />
-                                </div>
-                                {error}
+                                {error && (
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                                            <FileText size={16} />
+                                        </div>
+                                        {error}
+                                    </div>
+                                )}
+                                {Object.values(errors).map((err, i) => (
+                                    <p key={i} className="text-xs font-semibold ml-11">• {err.message}</p>
+                                ))}
                             </motion.div>
                         )}
 
@@ -106,15 +112,12 @@ const RegisterCompanyForm = ({ onSubmit, submitting, error }) => {
                                 <div className={`relative transition-all duration-300 ${focusedField === 'name' ? 'scale-[1.02]' : ''}`}>
                                     <Building2 className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${focusedField === 'name' ? 'text-primary' : 'text-gray-400'}`} size={20} />
                                     <input 
+                                        {...register('name')}
                                         type="text" 
-                                        name="name"
-                                        required
-                                        className="input-field pl-12" 
+                                        className={`input-field pl-12 ${errors.name ? 'border-red-300' : ''}`} 
                                         placeholder="e.g. Google India"
                                         onFocus={() => setFocusedField('name')}
                                         onBlur={() => setFocusedField(null)}
-                                        value={formData.name}
-                                        onChange={handleChange}
                                     />
                                 </div>
                             </div>
@@ -125,15 +128,12 @@ const RegisterCompanyForm = ({ onSubmit, submitting, error }) => {
                                     <div className={`relative transition-all duration-300 ${focusedField === 'website' ? 'scale-[1.02]' : ''}`}>
                                         <Globe className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${focusedField === 'website' ? 'text-primary' : 'text-gray-400'}`} size={20} />
                                         <input 
+                                            {...register('website')}
                                             type="text" 
-                                            name="website"
-                                            required
-                                            className="input-field pl-12" 
-                                            placeholder="acme.com"
+                                            className={`input-field pl-12 ${errors.website ? 'border-red-300' : ''}`} 
+                                            placeholder="https://acme.com"
                                             onFocus={() => setFocusedField('website')}
                                             onBlur={() => setFocusedField(null)}
-                                            value={formData.website}
-                                            onChange={handleChange}
                                         />
                                     </div>
                                 </div>
@@ -142,15 +142,12 @@ const RegisterCompanyForm = ({ onSubmit, submitting, error }) => {
                                     <div className={`relative transition-all duration-300 ${focusedField === 'location' ? 'scale-[1.02]' : ''}`}>
                                         <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${focusedField === 'location' ? 'text-primary' : 'text-gray-400'}`} size={20} />
                                         <input 
+                                            {...register('location')}
                                             type="text" 
-                                            name="location"
-                                            required
-                                            className="input-field pl-12" 
+                                            className={`input-field pl-12 ${errors.location ? 'border-red-300' : ''}`} 
                                             placeholder="Mumbai, India"
                                             onFocus={() => setFocusedField('location')}
                                             onBlur={() => setFocusedField(null)}
-                                            value={formData.location}
-                                            onChange={handleChange}
                                         />
                                     </div>
                                 </div>
@@ -161,15 +158,12 @@ const RegisterCompanyForm = ({ onSubmit, submitting, error }) => {
                                 <div className={`relative transition-all duration-300 ${focusedField === 'description' ? 'scale-[1.01]' : ''}`}>
                                     <FileText className={`absolute left-4 top-4 transition-colors ${focusedField === 'description' ? 'text-primary' : 'text-gray-400'}`} size={20} />
                                     <textarea 
-                                        name="description"
-                                        required
+                                        {...register('description')}
                                         rows="4"
-                                        className="input-field pl-12 py-4 resize-none min-h-[120px]" 
+                                        className={`input-field pl-12 py-4 resize-none min-h-[120px] ${errors.description ? 'border-red-300' : ''}`} 
                                         placeholder="Describe your company's mission, culture, and achievements..."
                                         onFocus={() => setFocusedField('description')}
                                         onBlur={() => setFocusedField(null)}
-                                        value={formData.description}
-                                        onChange={handleChange}
                                     ></textarea>
                                 </div>
                             </div>
