@@ -2,22 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { X, Briefcase, FileText, MapPin, DollarSign, Tag, Plus, Loader2, Sparkles, CheckCircle2, Power } from 'lucide-react';
-
-const jobSchema = z.object({
-    title: z.string().min(3, 'Title is too short'),
-    description: z.string().min(20, 'Description is too short'),
-    job_type: z.string().min(1, 'Please select a job type'),
-    location: z.string().min(2, 'Location is required'),
-    salary_min: z.coerce.number().min(0, 'Salary must be positive'),
-    salary_max: z.coerce.number().min(0, 'Salary must be positive'),
-    tags: z.array(z.string()).default([]),
-    is_active: z.boolean().default(true),
-}).refine(data => data.salary_max >= data.salary_min, {
-    message: "Maximum salary cannot be less than minimum salary",
-    path: ["salary_max"],
-});
+import { jobSchema } from '../../utils/validation';
 
 const PostJobModal = ({ isOpen, onClose, onSubmit, submitting, initialData = null }) => {
     const isEditing = !!initialData;

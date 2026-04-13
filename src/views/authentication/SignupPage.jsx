@@ -1,20 +1,11 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import api from '../../api';
 import { UserPlus, User, Briefcase } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const signupSchema = z.object({
-  first_name: z.string().min(2, 'First name must be at least 2 characters'),
-  last_name: z.string().min(2, 'Last name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['job_seeker', 'recruiter'], { required_error: 'Please select a role' }),
-});
+import { signupSchema } from '../../utils/validation';
 
 const SignupPage = () => {
     const navigate = useNavigate();

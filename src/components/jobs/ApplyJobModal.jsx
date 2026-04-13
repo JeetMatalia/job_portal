@@ -2,15 +2,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { X, Send, Loader2, Sparkles, Building2, MapPin, CheckCircle2 } from 'lucide-react';
 import { applyToJob } from '../../api';
-
-const applySchema = z.object({
-    cover_letter: z.string()
-        .min(20, 'Cover letter must be at least 20 characters')
-        .max(5000, 'Cover letter is too long'),
-});
+import { applicationSchema } from '../../utils/validation';
 
 const ApplyJobModal = ({ isOpen, onClose, job }) => {
     const [loading, setLoading] = useState(false);
@@ -18,7 +12,7 @@ const ApplyJobModal = ({ isOpen, onClose, job }) => {
     const [error, setError] = useState(null);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm({
-        resolver: zodResolver(applySchema),
+        resolver: zodResolver(applicationSchema),
     });
 
     const handleFormSubmit = async (data) => {
@@ -103,7 +97,7 @@ const ApplyJobModal = ({ isOpen, onClose, job }) => {
                                     </div>
                                     <button 
                                         onClick={onClose}
-                                        className="p-2 rounded-xl hover:bg-gray-50 text-gray-400 transition-all hover:text-gray-900"
+                                        className="p-3 rounded-2xl hover:bg-gray-50 text-gray-400 transition-all hover:text-gray-900"
                                     >
                                         <X size={24} />
                                     </button>

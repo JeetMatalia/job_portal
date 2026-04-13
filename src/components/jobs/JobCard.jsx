@@ -2,28 +2,9 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Building2, Wallet, Clock, ArrowUpRight } from 'lucide-react';
 
-const JobCard = ({ job, onClick }) => {
-    const formatSalary = (val) => {
-        if (!val) return '0';
-        if (val >= 10000000) return (val / 10000000).toFixed(1) + 'Cr';
-        if (val >= 100000) {
-            const lakhs = val / 100000;
-            return lakhs % 1 === 0 ? lakhs + 'L' : lakhs.toFixed(1) + 'L';
-        }
-        if (val >= 1000) return (val / 1000).toFixed(0) + 'k';
-        return val;
-    };
+import { formatSalary, getTimeAgo } from '../../utils/formatters';
 
-    const getTimeAgo = (timestamp) => {
-        if (!timestamp) return 'Recently';
-        const date = new Date(timestamp);
-        const now = new Date();
-        const diff = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-        if (diff === 0) return 'Today';
-        if (diff === 1) return 'Yesterday';
-        if (diff < 7) return `${diff}d ago`;
-        return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-    };
+const JobCard = ({ job, onClick }) => {
 
     return (
         <motion.div 

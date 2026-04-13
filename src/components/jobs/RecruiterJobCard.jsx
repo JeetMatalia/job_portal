@@ -1,20 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Briefcase, DollarSign, Calendar, Users, ChevronRight, MoreVertical, ChevronUp, ChevronDown, FileText, Trash2, Loader2 } from 'lucide-react';
+import { MapPin, DollarSign, Users, ChevronRight, FileText, Trash2, Loader2 } from 'lucide-react';
+import { formatSalary, formatDateSimple as formatDate } from '../../utils/formatters';
 
 const RecruiterJobCard = ({ job, onClick, onEdit, onDelete, isDeleting }) => {
-    // Format salary with commas and k/Lakh representation
-    const formatSalary = (val) => {
-        if (!val) return '0';
-        if (val >= 100000) return (val / 100000).toFixed(1) + 'L';
-        if (val >= 1000) return (val / 1000).toFixed(0) + 'k';
-        return val;
-    };
-
-    const formatDate = (dateString) => {
-        const options = { month: 'short', day: 'numeric', year: 'numeric' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
-    };
 
     const [showAllTags, setShowAllTags] = useState(false);
     const visibleTags = showAllTags ? job.tags : job.tags.slice(0, 5);

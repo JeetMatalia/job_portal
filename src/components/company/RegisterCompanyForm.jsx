@@ -2,15 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Building2, Globe, MapPin, FileText, Loader2, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
-
-const companySchema = z.object({
-    name: z.string().min(2, 'Company name must be at least 2 characters'),
-    website: z.string().url('Invalid website URL').or(z.string().min(1, 'Website is required')),
-    location: z.string().min(2, 'Location must be at least 2 characters'),
-    description: z.string().min(20, 'Description must be at least 20 characters'),
-});
+import { companySchema } from '../../utils/validation';
 
 const RegisterCompanyForm = ({ onSubmit, submitting, error }) => {
     const { register, handleSubmit, formState: { errors } } = useForm({
