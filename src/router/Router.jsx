@@ -42,8 +42,12 @@ const AppRoutes = () => {
                 <Route path="login" element={<LoginPage />} />
                 <Route path="signup" element={<SignupPage />} />
                 
-                {/* Public Jobs Route */}
-                <Route path="jobs" element={<JobListing />} />
+                {/* Protected Jobs Route */}
+                <Route path="jobs" element={
+                    <ProtectedRoute>
+                        <JobListing />
+                    </ProtectedRoute>
+                } />
 
                 {/* Protected Seeker Routes */}
                 <Route path="my-applications" element={
