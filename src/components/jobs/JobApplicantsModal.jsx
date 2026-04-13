@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Users, Mail, Clock, FileText, ChevronRight, Loader2, User, Search, AlertCircle, Sparkles } from 'lucide-react';
-import { getJobApplications, updateApplicationStatus } from '../../../services/api';
+import { getJobApplications, updateApplicationStatus } from '../../api';
 
 const JobApplicantsModal = ({ isOpen, onClose, job }) => {
     const [applications, setApplications] = useState([]);

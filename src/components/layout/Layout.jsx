@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Briefcase, User, LogOut, LayoutDashboard, Building, PlusCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import avatar from '../../assets/avatar.png';
+import avatar from '../../assets/images/avatar.png';
 
 const LogoutModal = ({ isOpen, onClose, onConfirm }) => {
     return (

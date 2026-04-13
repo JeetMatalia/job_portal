@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getMyApplications, deleteApplication } from '../../../services/api';
+import { getMyApplications, deleteApplication } from '../../api';
 import { 
     Briefcase, 
     MapPin, 

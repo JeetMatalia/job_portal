@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Building, MapPin, Globe, ExternalLink, Search, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getCompanies } from '../../../services/api';
+import { getCompanies } from '../../api';
 import toast from 'react-hot-toast';
 
 const CompaniesListingPage = () => {

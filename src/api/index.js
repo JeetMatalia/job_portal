@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_ENDPOINTS } from '../constant/apiEndpoints';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
@@ -34,7 +35,7 @@ api.interceptors.response.use(
       if (refreshToken) {
         try {
           // Attempt to refresh the token
-          const { data } = await axios.post(`${api.defaults.baseURL}/auth/refresh`, {
+          const { data } = await axios.post(`${api.defaults.baseURL}${API_ENDPOINTS.AUTH.REFRESH}`, {
             refresh_token: refreshToken,
           });
 
@@ -69,23 +70,23 @@ api.interceptors.response.use(
 
 export default api;
 
-export const getProfile = () => api.get('/users/me');
-export const deleteProfile = () => api.delete('/users/me');
+export const getProfile = () => api.get(API_ENDPOINTS.USER.ME);
+export const deleteProfile = () => api.delete(API_ENDPOINTS.USER.ME);
 
-export const getCompanies = () => api.get('/companies/');
-export const createCompany = (companyData) => api.post('/companies/', companyData);
-export const getOwnCompany = () => api.get('/companies/me');
-export const updateCompany = (id, companyData) => api.put(`/companies/${id}`, companyData);
-export const deleteCompany = (id) => api.delete(`/companies/${id}`);
+export const getCompanies = () => api.get(API_ENDPOINTS.COMPANIES.LIST);
+export const createCompany = (companyData) => api.post(API_ENDPOINTS.COMPANIES.CREATE, companyData);
+export const getOwnCompany = () => api.get(API_ENDPOINTS.COMPANIES.ME);
+export const updateCompany = (id, companyData) => api.put(API_ENDPOINTS.COMPANIES.UPDATE(id), companyData);
+export const deleteCompany = (id) => api.delete(API_ENDPOINTS.COMPANIES.DELETE(id));
 
-export const createJob = (jobData) => api.post('/jobs/', jobData);
-export const getJobs = (params) => api.get('/jobs/', { params });
-export const updateJob = (id, jobData) => api.put(`/jobs/${id}`, jobData);
-export const deleteJob = (id) => api.delete(`/jobs/${id}`);
-export const getJobApplications = (jobId) => api.get(`/jobs/${jobId}/applications`);
-export const updateApplicationStatus = (applicationId, status) => api.put(`/applications/${applicationId}/update-status`, { application_status: status });
-export const applyToJob = (jobId, coverLetter) => api.post(`/jobs/${jobId}/applications`, { cover_letter: coverLetter });
-export const getMyApplications = () => api.get('/applications/me');
-export const deleteApplication = (id) => api.delete(`/applications/${id}`);
+export const createJob = (jobData) => api.post(API_ENDPOINTS.JOBS.CREATE, jobData);
+export const getJobs = (params) => api.get(API_ENDPOINTS.JOBS.LIST, { params });
+export const updateJob = (id, jobData) => api.put(API_ENDPOINTS.JOBS.UPDATE(id), jobData);
+export const deleteJob = (id) => api.delete(API_ENDPOINTS.JOBS.DELETE(id));
+export const getJobApplications = (jobId) => api.get(API_ENDPOINTS.JOBS.APPLICATIONS(jobId));
+export const updateApplicationStatus = (applicationId, status) => api.put(API_ENDPOINTS.APPLICATIONS.UPDATE_STATUS(applicationId), { application_status: status });
+export const applyToJob = (jobId, coverLetter) => api.post(API_ENDPOINTS.JOBS.APPLY(jobId), { cover_letter: coverLetter });
+export const getMyApplications = () => api.get(API_ENDPOINTS.APPLICATIONS.ME);
+export const deleteApplication = (id) => api.delete(API_ENDPOINTS.APPLICATIONS.DELETE(id));
 
 

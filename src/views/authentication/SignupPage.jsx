@@ -3,8 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../context/AuthContext';
-import api from '../../../services/api';
+import { useAuth } from '../../context/AuthContext';
+import api from '../../api';
 import { UserPlus, User, Briefcase } from 'lucide-react';
 import toast from 'react-hot-toast';
 

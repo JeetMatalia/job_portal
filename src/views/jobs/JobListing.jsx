@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getJobs } from '../../../services/api';
+import { getJobs } from '../../api';
 import { Search, Loader2, Filter, X, MapPin, DollarSign, Briefcase, Trash2, Sparkles, AlertCircle, ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
-import JobCard from '../components/JobCard';
-import ApplyJobModal from '../components/ApplyJobModal';
-import { useAuth } from '../../../context/AuthContext';
+import JobCard from '../../components/jobs/JobCard';
+import ApplyJobModal from '../../components/jobs/ApplyJobModal';
+import { useAuth } from '../../context/AuthContext';
 
 
 const JobListing = () => {

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { getOwnCompany, createCompany, updateCompany, deleteCompany } from '../../../services/api';
+import { getOwnCompany, createCompany, updateCompany, deleteCompany } from '../../api';
 import { Building2, Globe, MapPin, FileText, CheckCircle2, AlertCircle, Loader2, ArrowLeft, Trash2, ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
-import RegisterCompanyForm from '../components/RegisterCompanyForm';
-import DeleteConfirmationModal from '../../../components/DeleteConfirmationModal';
+import RegisterCompanyForm from '../../components/company/RegisterCompanyForm';
+import DeleteConfirmationModal from '../../components/modal/DeleteConfirmationModal';
 
 const SuccessCelebration = ({ companyName, onContinue }) => {
     return (

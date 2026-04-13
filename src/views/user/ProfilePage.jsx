@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { User, Mail, Shield, Calendar, Clock, AlertTriangle, Trash2 } from 'lucide-react';
-import { deleteProfile } from '../../../services/api';
-import DeleteConfirmationModal from '../../../components/DeleteConfirmationModal';
+import { deleteProfile } from '../../api';
+import DeleteConfirmationModal from '../../components/modal/DeleteConfirmationModal';
 
 const ProfilePage = () => {
     const { user, loading, logout } = useAuth();

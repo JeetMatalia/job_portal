@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Loader2, Sparkles, Building2, MapPin, Wallet, CheckCircle2 } from 'lucide-react';
-import { applyToJob } from '../../../services/api';
+import { applyToJob } from '../../api';
 
 const ApplyJobModal = ({ isOpen, onClose, job }) => {
     const [coverLetter, setCoverLetter] = useState('');

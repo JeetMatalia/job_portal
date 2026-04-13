@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getJobs, createJob, getOwnCompany, updateJob, deleteJob } from '../../../services/api';
+import { getJobs, createJob, getOwnCompany, updateJob, deleteJob } from '../../api';
 import { Plus, Briefcase, Search, Loader2, Sparkles, Filter, TrendingUp, Users, AlertCircle, X, MapPin, Trash2, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import PostJobModal from '../components/PostJobModal';
-import RecruiterJobCard from '../components/RecruiterJobCard';
-import DeleteConfirmationModal from '../../../components/DeleteConfirmationModal';
-import JobApplicantsModal from '../components/JobApplicantsModal';
+import PostJobModal from '../../components/jobs/PostJobModal';
+import RecruiterJobCard from '../../components/jobs/RecruiterJobCard';
+import DeleteConfirmationModal from '../../components/modal/DeleteConfirmationModal';
+import JobApplicantsModal from '../../components/jobs/JobApplicantsModal';
 
 const RecruiterDashboard = () => {
     const [jobs, setJobs] = useState([]);
